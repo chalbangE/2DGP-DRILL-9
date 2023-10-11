@@ -124,7 +124,7 @@ class StateMachine:
             Sleep: {space_down: Idle, right_down: Run, left_down: Run, right_up: Idle, left_up: Idle},
             Idle: {time_out: Sleep, right_down: Run, left_down: Run, right_up: Idle, left_up: Idle, a_down: AutoRun},
             Run: {right_down: Run, left_down: Run, right_up: Idle, left_up: Idle, space_down: Idle},
-            AutoRun: {time_out: Idle}
+            AutoRun: {time_out: Idle, right_down: Run, left_down: Run, right_up: Idle, left_up: Idle}
         }
     def handle_event(self, e):
         for check_event, next_state in self.trasitions[self.cur_state].items():
