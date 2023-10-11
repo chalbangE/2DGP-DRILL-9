@@ -80,15 +80,51 @@ class Run:
     @staticmethod
     def draw(boy):
         boy.image.clip_draw(boy.frame * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+
+class AutoRun:
+    @staticmethod
+    def enter(boy, e):
+        if boy.action == 2:
+            boy.dir, boy.action = -1, 0
+        elif boy.action == 3:
+            boy.dir, boy.action = 1, 1
+
+        boy.speed = 3
+        boy.frame = 0
+        boy.wait_time = get_time()
+        boy.size = 200
+    @staticmethod
+    def exit(boy, e):
+        pass
+    @staticmethod
+    def do(boy):
+        if get_time() - boy.wait_time > 4:
+            boy.state_machine.handle_event(('TIME_OUT', 0))
+        boy.frame = (boy.frame + 1) % 8
+        if boy.speed < 10:
+            boy.speed += 1
+        boy.x += boy.dir * boy.speed
+
+        if boy.x + 50 > 800:
+            boy.dir *= -1
+            boy.action = 0
+        elif boy.x < 0:
+            boy.dir *= -1
+            boy.action = 1
+        pass
+    @staticmethod
+    def draw(boy):
+            boy.image.clip_composite_draw(boy.frame * 100, boy.action * 100, 100, 100,
+                        0, '', boy.x, boy.y + 40, boy.size, boy.size)
 class StateMachine:
     def __init__(self, boy):
         self.boy = boy
         self.cur_state = Sleep
         self.trasitions = {
             Sleep: {space_down: Idle, right_down: Run, left_down: Run, right_up: Idle, left_up: Idle},
-            Idle: {time_out: Sleep, right_down: Run, left_down: Run, right_up: Idle, left_up: Idle},
-            Run: {right_down: Run, left_down: Run, right_up: Idle, left_up: Idle, space_down: Idle}
-
+            Idle: {time_out: Sleep, right_down: Run, left_down: Run, right_up: Idle, left_up: Idle, a_down: AutoRun},
+            Run: {right_down: Run, left_down: Run, right_up: Idle, left_up: Idle, space_down: Idle},
+            AutoRun: {time_out: Idle}
         }
     def handle_event(self, e):
         for check_event, next_state in self.trasitions[self.cur_state].items():
